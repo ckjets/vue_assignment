@@ -2,7 +2,7 @@
   <div>
     <ul>
       <li v-for="(pref, key) in prefectures" :key="key">
-        <input type="checkbox" :value="pref.prefCode" v-model="checked" />&nbsp;
+        <input type="checkbox" :value="pref" v-model="checked" />&nbsp;
         <span>{{ pref.prefName }}</span>
         <br />
       </li>
@@ -12,7 +12,7 @@
 
 <script>
 import axios from "axios";
-
+import store from "../store";
 export default {
   name: "PrefecuteresCheckbox",
   data() {
@@ -34,8 +34,14 @@ export default {
           headers: { "X-API-KEY": "GUg7et7BNeHPhCkOMWIMi6ANFd6kCoPzffIOFLwG" },
         })
         //prefecturesに都道府県データをオブジェクトとして返す
-        // .then(response => (this.prefectures = response.data.result));
         .then((response) => (this.prefectures = response.data.result));
+    },
+  },
+  /** ChartContainerでチェックされた都道府県の人口データ取得APIを叩くためにstateを変更 */
+  watch: {
+    checked: function () {
+      store.commit("setChecked", this.checked);
+      console.log(this.checked);
     },
   },
 };

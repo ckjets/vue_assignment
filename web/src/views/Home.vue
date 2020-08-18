@@ -8,7 +8,7 @@
         <!-- {{ checked }}
         <h2>グラフ</h2>-->
         <PrefecuteresCheckbox></PrefecuteresCheckbox>
-        <LineChartContainer/>
+        <LineChartContainer />
       </div>
     </div>
   </div>
@@ -19,11 +19,12 @@
 // import PrefecuteresCheckbox from '@/components/PrefecuteresCheckbox.vue'
 import PrefecuteresCheckbox from "../components/PrefecturesCheckbox";
 import LineChartContainer from "../components/ChartContainer";
+
 export default {
   name: "Home",
   components: {
     PrefecuteresCheckbox,
-    LineChartContainer
+    LineChartContainer,
   },
 };
 </script>
