@@ -41,7 +41,6 @@ export default {
   watch: {
     checked: function () {
       store.commit("setChecked", this.checked);
-      console.log(this.checked);
     },
   },
 };
