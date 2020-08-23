@@ -26,7 +26,7 @@ export default {
   name: "LineChartContainer",
   components: { LineChart, VueLoading },
   data: () => ({
-    loaded: false,
+    loaded: true,
     chartdata: {
       labels: [
         "1960",
@@ -66,31 +66,22 @@ export default {
       responsiveAnimationDuration: 0,
     },
   }),
-  mounted() {
-    this.loaded = false;
-    // try {
-    //   // const { userlist } = await fetch("/api/userlist");
-    //   // this.chartData = userlist;
-    //   this.loaded = true;
-    // } catch (e) {
-    //   console.error(e);
-    // }
-    // this.chartdata.datasets[0].data = [1111, 1111];
-    this.loaded = true;
-  },
   /** チェックされたprefIdを渡す */
   watch: {
     checked: function (val) {
       this.loaded = false;
+      // 描画前にグラフデータ初期化する
+      this.chartdata.datasets = [];
       if (val.length === 0) {
-        this.chartdata.datasets = [];
-        this.loaded = true;
+        setTimeout(() => {
+          this.loaded = true;
+        }, 500);
       } else {
-        // 描画前にグラフデータ初期化する
-        this.chartdata.datasets = [];
+        // 配列の最後に格納されている都道府県のときにloadedをtrueにしたいためlastPrefを渡す
+        let lastPref = false;
         for (let i = 0; i < val.length; i++) {
-          //TODO グラフに描画済みのものは追加しない
-          this.getPopulationData(val[i], i);
+          if (i === val.length - 1) lastPref = true;
+          this.getPopulationData(val[i], lastPref);
         }
       }
     },
@@ -103,14 +94,8 @@ export default {
     },
   },
   methods: {
-    createChartdata(poplation, prefName, checkedNumber) {
-      let borderColor;
-
-      if (checkedNumber === 0) {
-        borderColor = "#2ecc71";
-      } else if (checkedNumber === 1) {
-        borderColor = "#3498db";
-      }
+    createChartdata(poplation, prefName, lastPref) {
+      const borderColor = "#2ecc71";
 
       const dataset = {
         label: prefName,
@@ -119,18 +104,19 @@ export default {
         backgroundColor: "rgba(0,0,0,0)",
       };
       this.chartdata.datasets.push(dataset);
-      // this.$set(this.chartdata.datasets,"2", datasets);
+      if (lastPref) {
+        setTimeout(() => {
+          this.loaded = true;
+        }, 500);
+      }
     },
-    getPopulationData(stateChecked, checkedNumber) {
+    getPopulationData(stateChecked, lastPref) {
       let checkedId = stateChecked.prefCode;
       let checkedName = stateChecked.prefName;
 
       //人口構成データの取得
       const perYear_url =
         "https://opendata.resas-portal.go.jp/api/v1/population/composition/perYear";
-      //population用の配列
-      let populationData = [];
-      let tmpPoplationData = [];
 
       try {
         axios
@@ -145,12 +131,11 @@ export default {
           })
           //populationに人口構成(総人口)のデータをオブジェクトとして返す
           .then((response) => {
-            tmpPoplationData = response.data.result.data[0].data;
-            for (var i = 0; i < tmpPoplationData.length; i++) {
-              populationData.push(tmpPoplationData[i].value);
-            }
-            this.createChartdata(populationData, checkedName, checkedNumber);
-            this.loaded = true;
+            let poplationDataList = response.data.result.data.filter(data => data.label === '総人口')[0].data
+            const populationData = poplationDataList.map((data) => {
+              return data.value
+            })
+            this.createChartdata(populationData, checkedName, lastPref);
           });
       } catch (e) {
         console.error(e);
